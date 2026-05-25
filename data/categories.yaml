@@ -1,0 +1,39 @@
+# Cyber Refusal Decay Eval: locked ATT&CK categories
+# Five MITRE ATT&CK tactics, six chains per category, 30 chains total.
+# See https://attack.mitre.org/tactics/enterprise/ for the canonical taxonomy.
+
+version: 1
+locked_on: 2026-05-25
+total_chains: 30
+chains_per_category: 6
+
+categories:
+  - id: TA0001
+    name: Initial Access
+    url: https://attack.mitre.org/tactics/TA0001/
+    description: Techniques that use vectors to gain initial foothold within a network. Examples include spearphishing, exploiting public facing apps, valid accounts.
+    target_chain_count: 6
+
+  - id: TA0002
+    name: Execution
+    url: https://attack.mitre.org/tactics/TA0002/
+    description: Techniques that result in adversary controlled code running on a local or remote system. Includes command and scripting interpreters, scheduled tasks, native API abuse.
+    target_chain_count: 6
+
+  - id: TA0003
+    name: Persistence
+    url: https://attack.mitre.org/tactics/TA0003/
+    description: Techniques that adversaries use to keep access to systems across restarts, credential changes, and other interruptions. Includes boot scripts, scheduled tasks, account creation, registry run keys.
+    target_chain_count: 6
+
+  - id: TA0008
+    name: Lateral Movement
+    url: https://attack.mitre.org/tactics/TA0008/
+    description: Techniques that adversaries use to enter and control remote systems on a network. Includes pass the hash, remote services, internal spearphishing, exploitation of remote services.
+    target_chain_count: 6
+
+  - id: TA0010
+    name: Exfiltration
+    url: https://attack.mitre.org/tactics/TA0010/
+    description: Techniques that adversaries use to steal data from a network. Includes exfiltration over alternative protocol, exfiltration over web service, automated exfiltration, scheduled transfer.
+    target_chain_count: 6
