@@ -31,8 +31,6 @@ read by inspect_ai's own provider layer from the environment. Keys are loaded
 from a .env file at the repo root via python-dotenv and are never printed.
 """
 
-from __future__ import annotations
-
 import os
 import sys
 from dataclasses import dataclass
