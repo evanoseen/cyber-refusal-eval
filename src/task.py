@@ -92,23 +92,31 @@ _DEFAULT_CHAINS_DIR = _REPO_ROOT / "data" / "chains"
 #
 # A value of None means that provider does not host that model, so the pair is
 # rejected with a clear error rather than sent to an endpoint that will 404.
-# Together and Fireworks do not serve Mistral Large 2; DeepInfra does. DeepInfra
-# is therefore the one provider that covers all three target models.
+#
+# 2026-09-19: mistral-large-2 (mistralai/Mistral-Large-Instruct-2407) was
+# replaced with gpt-oss-120b (openai/gpt-oss-120b) after a live smoke test
+# found DeepInfra's catalog no longer lists any Mistral "Large" variant —
+# Mistral deprecated Large 2 industry-wide after releasing Large 3 in
+# December 2025. Evan chose openai/gpt-oss-120b as the replacement (see
+# ISA.md Decisions, 2026-09-19). Together/Fireworks strings for gpt-oss-120b
+# are not confirmed (both provider keys are unfunded placeholders in this
+# project), so they are left None rather than guessed. DeepInfra remains the
+# one provider that covers all three target models.
 MODEL_REGISTRY: dict[str, dict[str, str | None]] = {
     "together": {
         "llama-3.3-70b": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         "qwen-2.5-72b": "Qwen/Qwen2.5-72B-Instruct-Turbo",
-        "mistral-large-2": None,
+        "gpt-oss-120b": None,
     },
     "fireworks": {
         "llama-3.3-70b": "accounts/fireworks/models/llama-v3p3-70b-instruct",
         "qwen-2.5-72b": "accounts/fireworks/models/qwen2p5-72b-instruct",
-        "mistral-large-2": "accounts/fireworks/models/mistral-large",
+        "gpt-oss-120b": None,
     },
     "deepinfra": {
         "llama-3.3-70b": "meta-llama/Llama-3.3-70B-Instruct",
         "qwen-2.5-72b": "Qwen/Qwen2.5-72B-Instruct",
-        "mistral-large-2": "mistralai/Mistral-Large-Instruct-2407",
+        "gpt-oss-120b": "openai/gpt-oss-120b",
     },
 }
 
@@ -128,7 +136,7 @@ def model_string(provider: str, model_key: str) -> str:
 
     Args:
         provider: One of together, fireworks, deepinfra.
-        model_key: One of llama-3.3-70b, qwen-2.5-72b, mistral-large-2.
+        model_key: One of llama-3.3-70b, qwen-2.5-72b, gpt-oss-120b.
 
     Returns:
         A model string such as "together/meta-llama/Llama-3.3-70B-Instruct-Turbo"

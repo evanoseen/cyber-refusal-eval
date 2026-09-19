@@ -23,6 +23,7 @@ logs/
 # Raw run outputs (commit aggregates only)
 results/full_run/
 results/pilot/
+results/_offline_test/
 *.jsonl.tmp
 
 # OS

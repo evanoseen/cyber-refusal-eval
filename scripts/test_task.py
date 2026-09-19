@@ -105,19 +105,19 @@ def test_model_string(task_module: types.ModuleType) -> str:
     expected = {
         ("together", "llama-3.3-70b"): "together/meta-llama/Llama-3.3-70B-Instruct-Turbo",
         ("fireworks", "qwen-2.5-72b"): "fireworks/accounts/fireworks/models/qwen2p5-72b-instruct",
-        ("deepinfra", "mistral-large-2"): "openai-api/deepinfra/mistralai/Mistral-Large-Instruct-2407",
+        ("deepinfra", "gpt-oss-120b"): "openai-api/deepinfra/openai/gpt-oss-120b",
     }
     for (provider, key), want in expected.items():
         got = task_module.model_string(provider, key)
         _check(got == want, f"model_string({provider},{key}) = {got!r}, expected {want!r}")
 
-    # Together does not host Mistral Large 2, so the pair must raise.
+    # Together does not host gpt-oss-120b in this project's registry, so the pair must raise.
     raised = False
     try:
-        task_module.model_string("together", "mistral-large-2")
+        task_module.model_string("together", "gpt-oss-120b")
     except ValueError:
         raised = True
-    _check(raised, "together/mistral-large-2 should raise, it is not hosted")
+    _check(raised, "together/gpt-oss-120b should raise, it is not hosted")
     return "model_string maps all hosted pairs and rejects the unhosted one"
 
 

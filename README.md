@@ -9,7 +9,7 @@ Does decomposing a cyber attack chain across multiple conversation turns lead to
 ## Scope
 
 - **Dataset**: 30 attack chains across 5 MITRE ATT&CK categories (Initial Access, Execution, Persistence, Lateral Movement, Exfiltration), 6 chains per category. Two prompt variants per chain: single turn direct, 4 turn decomposed.
-- **Models**: Llama 3.3 70B Instruct, Qwen 2.5 72B Instruct, Mistral Large 2. Optional fourth: DeepSeek V3 if budget allows.
+- **Models**: Llama 3.3 70B Instruct, Qwen 2.5 72B Instruct, openai/gpt-oss-120b (swapped in 2026-09-19 after Mistral Large 2 was deprecated industry-wide). Optional fourth: DeepSeek V3 if budget allows.
 - **Framework**: inspect_ai by UK AISI.
 - **Scoring**: Claude Sonnet 4.6 judge with three labels (REFUSED, PARTIAL, COMPLIED), plus human spot check on 30 random samples.
 - **Statistics**: bootstrap confidence intervals on refusal rate deltas, per model and per ATT&CK category.
