@@ -22,6 +22,7 @@ ANTHROPIC_API_KEY. This script needs neither. Run it with:
 
 from __future__ import annotations
 
+import itertools
 import os
 import sys
 import types
@@ -159,6 +160,124 @@ def test_multi_turn(task_module: types.ModuleType, inspect_eval) -> str:
     return f"multi_turn ran {len(log.samples)} sample(s), 4 user turns each, labels valid"
 
 
+def _run_with_fixed_labels(
+    task_module: types.ModuleType,
+    inspect_eval,
+    task_factory,
+    labels: list[str],
+    log_dir: str,
+) -> dict[str, float]:
+    """Run one task with the judge mock handing out `labels` in order, one per call.
+
+    An uneven, exact sequence (rather than an even cycle) is deliberate: an
+    even 1 in 3 split would still read as roughly correct even if two labels
+    were swapped in the aggregation path. Exact, unequal counts catch that.
+    """
+    import anthropic
+
+    original_cls = anthropic.AsyncAnthropic
+    label_iter = iter(labels)
+
+    class _FixedMessages:
+        async def create(self, **kwargs: object) -> _FakeMessage:
+            return _FakeMessage(f"reasoning line\n{next(label_iter)}")
+
+    class _FixedAsyncAnthropic:
+        def __init__(self, *args: object, **kwargs: object) -> None:
+            self.messages = _FixedMessages()
+
+    anthropic.AsyncAnthropic = _FixedAsyncAnthropic  # type: ignore[attr-defined]
+    try:
+        task = task_factory(chains_dir=str(_REPO_ROOT / "data" / "chains"))
+        logs = inspect_eval(task, model="mockllm/model", display="none", log_dir=log_dir)
+    finally:
+        anthropic.AsyncAnthropic = original_cls
+
+    log = logs[0]
+    _check(log.status == "success", f"run status was {log.status}, expected success")
+    return {m.name: m.value for m in log.results.scores[0].metrics.values()}
+
+
+def test_aggregate_metrics(task_module: types.ModuleType, inspect_eval) -> str:
+    """Regression test for the 2026-09-19 metric bug (ISA.md Changelog, 2026-09-21 fix).
+
+    inspect_ai applies a default mean_score epoch reducer even at epochs=1,
+    which silently coerced our REFUSED/PARTIAL/COMPLIED string labels to 0.0
+    before refused_rate/partial_rate/complied_rate ever ran, so every printed
+    aggregate metric read 0.000 on the real full run despite correct per
+    sample scores. The fix passes Epochs(1, reducer=[]) to skip reduction.
+
+    Uses an uneven, exact label distribution (8 REFUSED, 4 PARTIAL, 3
+    COMPLIED across 15 chains) rather than an even split, since an even
+    split would still look roughly right even if two labels were swapped
+    somewhere in the aggregation path. Also covers an all REFUSED case
+    (must be exactly 1.0, 0.0, 0.0) and both single_turn and multi_turn.
+    """
+    uneven = ["REFUSED"] * 8 + ["PARTIAL"] * 4 + ["COMPLIED"] * 3
+
+    single_metrics = _run_with_fixed_labels(
+        task_module,
+        inspect_eval,
+        task_module.single_turn,
+        uneven,
+        str(_REPO_ROOT / "results" / "_offline_test" / "aggregate_metrics_single"),
+    )
+    for name, expected in (
+        ("refused_rate", 8 / 15),
+        ("partial_rate", 4 / 15),
+        ("complied_rate", 3 / 15),
+    ):
+        value = single_metrics.get(name)
+        _check(value is not None, f"single_turn: {name} missing from results.scores")
+        _check(
+            abs(value - expected) < 1e-9,
+            f"single_turn: {name} = {value}, expected exactly {expected} "
+            f"(8/4/3 split over 15). 0.0 means the epoch reduction bug regressed.",
+        )
+
+    multi_metrics = _run_with_fixed_labels(
+        task_module,
+        inspect_eval,
+        task_module.multi_turn,
+        uneven,
+        str(_REPO_ROOT / "results" / "_offline_test" / "aggregate_metrics_multi"),
+    )
+    for name, expected in (
+        ("refused_rate", 8 / 15),
+        ("partial_rate", 4 / 15),
+        ("complied_rate", 3 / 15),
+    ):
+        value = multi_metrics.get(name)
+        _check(value is not None, f"multi_turn: {name} missing from results.scores")
+        _check(
+            abs(value - expected) < 1e-9,
+            f"multi_turn: {name} = {value}, expected exactly {expected}",
+        )
+
+    all_refused_metrics = _run_with_fixed_labels(
+        task_module,
+        inspect_eval,
+        task_module.single_turn,
+        ["REFUSED"] * 15,
+        str(_REPO_ROOT / "results" / "_offline_test" / "aggregate_metrics_all_refused"),
+    )
+    for name, expected in (
+        ("refused_rate", 1.0),
+        ("partial_rate", 0.0),
+        ("complied_rate", 0.0),
+    ):
+        value = all_refused_metrics.get(name)
+        _check(
+            value == expected,
+            f"all REFUSED case: {name} = {value}, expected exactly {expected}",
+        )
+
+    return (
+        f"single_turn {single_metrics}, multi_turn {multi_metrics}, "
+        f"all refused {all_refused_metrics}"
+    )
+
+
 def _sample_label(sample: object) -> object:
     """Pull the single scorer's label out of an eval sample."""
     scores = getattr(sample, "scores", None)
@@ -184,6 +303,7 @@ def main() -> int:
         ("model_string", lambda: test_model_string(task_module)),
         ("single_turn end to end", lambda: test_single_turn(task_module, inspect_eval)),
         ("multi_turn end to end", lambda: test_multi_turn(task_module, inspect_eval)),
+        ("aggregate metrics not zeroed", lambda: test_aggregate_metrics(task_module, inspect_eval)),
     ]
 
     failures = 0

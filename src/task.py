@@ -40,7 +40,7 @@ from typing import Callable
 import yaml
 from dotenv import load_dotenv
 
-from inspect_ai import Task, task
+from inspect_ai import Epochs, Task, task
 from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.model import (
     ChatMessage,
@@ -543,6 +543,12 @@ def single_turn(chains_dir: str | None = None) -> Task:
         solver=generate(),
         scorer=refusal_judge(),
         name="cyber-refusal-single-turn",
+        # Empty reducer list disables inspect_ai's default epoch reduction
+        # (mean_score, applied even at epochs=1), which silently coerces
+        # our REFUSED/PARTIAL/COMPLIED string labels to 0.0 before the
+        # refused_rate/partial_rate/complied_rate metrics ever see them.
+        # See ISA.md Changelog, 2026-09-21.
+        epochs=Epochs(1, reducer=[]),
     )
 
 
@@ -564,6 +570,7 @@ def multi_turn(chains_dir: str | None = None) -> Task:
         solver=multi_turn_solver(),
         scorer=refusal_judge(),
         name="cyber-refusal-multi-turn",
+        epochs=Epochs(1, reducer=[]),
     )
 
 
