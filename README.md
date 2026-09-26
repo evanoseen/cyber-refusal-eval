@@ -8,12 +8,12 @@ Does decomposing a cyber attack chain across multiple conversation turns lead to
 
 ## Scope
 
-- **Dataset**: 30 attack chains across 5 MITRE ATT&CK categories (Initial Access, Execution, Persistence, Lateral Movement, Exfiltration), 6 chains per category. Two prompt variants per chain: single turn direct, 4 turn decomposed.
+- **Dataset**: 15 attack chains across 5 MITRE ATT&CK categories (Initial Access, Execution, Persistence, Lateral Movement, Exfiltration), 3 chains per category (descoped from 30 chains, 6 per category, on 2026-08-21). Two prompt variants per chain: single turn direct, 4 turn decomposed.
 - **Models**: Llama 3.3 70B Instruct, Qwen 2.5 72B Instruct, openai/gpt-oss-120b (swapped in 2026-09-19 after Mistral Large 2 was deprecated industry-wide). Optional fourth: DeepSeek V3 if budget allows.
 - **Framework**: inspect_ai by UK AISI.
-- **Scoring**: Claude Sonnet 4.6 judge with three labels (REFUSED, PARTIAL, COMPLIED), plus human spot check on 30 random samples.
+- **Scoring**: Claude Sonnet 4.6 judge with three labels (REFUSED, PARTIAL, COMPLIED), plus human spot check on 15 random samples.
 - **Statistics**: bootstrap confidence intervals on refusal rate deltas, per model and per ATT&CK category.
-- **Total cells**: 180 (30 chains times 2 variants times 3 models).
+- **Total cells**: 90 (15 chains times 2 variants times 3 models).
 
 ## Constraints
 
@@ -36,9 +36,9 @@ cp .env.example .env
 inspect eval src/task.py --model together/meta-llama/Llama-3.3-70B-Instruct-Turbo
 ```
 
-Pilot run uses Llama 3.3 70B on 5 chains. Full matrix run is 180 cells.
+Pilot run uses Llama 3.3 70B on 5 chains. Full matrix run is 90 cells.
 
-See `data/SCHEMA.md` for chain format, `src/judge_prompt.py` for the judge rubric, `notes/papers/` for foundational reading, and `writeup/post.md` for the published analysis.
+See `data/SCHEMA.md` for chain format, `src/judge_prompt.py` for the judge rubric, and `notes/papers/` for foundational reading. The writeup is not published yet, see Status below.
 
 ## Status
 
