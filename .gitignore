@@ -36,3 +36,8 @@ Thumbs.db
 *.swp
 *.swo
 MEMORY/golden_set_answer_key.md
+
+# Private working notes (backed up to a separate private repo via .git-private)
+ISA.md
+MEMORY/
+.git-private/
