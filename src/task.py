@@ -95,7 +95,7 @@ _DEFAULT_CHAINS_DIR = _REPO_ROOT / "data" / "chains"
 #
 # 2026-09-19: mistral-large-2 (mistralai/Mistral-Large-Instruct-2407) was
 # replaced with gpt-oss-120b (openai/gpt-oss-120b) after a live smoke test
-# found DeepInfra's catalog no longer lists any Mistral "Large" variant —
+# found DeepInfra's catalog no longer lists any Mistral "Large" variant.
 # Mistral deprecated Large 2 industry-wide after releasing Large 3 in
 # December 2025. Evan chose openai/gpt-oss-120b as the replacement (see
 # ISA.md Decisions, 2026-09-19). Together/Fireworks strings for gpt-oss-120b
