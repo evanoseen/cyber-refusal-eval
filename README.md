@@ -42,7 +42,9 @@ See `data/SCHEMA.md` for chain format, `src/judge_prompt.py` for the judge rubri
 
 ## Status
 
-Work in progress. v1 ship target: 2026-08-28. Fellows winter 2027 application: 2026-09-01.
+Full 90 cell run complete (15 chains, 2 variants, 3 models). Headline: gpt-oss-120b refused 100% of single turn requests but only 6.7% under 4 turn decomposition; Llama 3.3 70B and Qwen 2.5 72B showed no clear effect. Aggregates are in `results/bootstrap_by_model.csv` and `results/charts/`. Writeup in progress.
+
+Raw model transcripts are not published, because non refusal responses to attack prompts can contain operational detail. Available to researchers on request.
 
 ## License
 
