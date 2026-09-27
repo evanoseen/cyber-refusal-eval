@@ -1,7 +1,8 @@
-"""ISC-22 (partial): two of the three required charts, saved to results/charts/.
+"""ISC-22: all three required charts, saved to results/charts/.
 
-Chart 3 (agreement rate vs judge for the human spot check) needs ISC-20's
-data, which does not exist yet, and is not produced here.
+Chart 3 (agreement rate vs judge for the human spot check) reads
+results/spot_check.csv, written by scripts/score_spot_check.py once ISC-20's
+15 real blind labels exist.
 
 Palette: fixed categorical order from the dataviz skill's reference palette
 (references/palette.md), slots 1/2/3 (blue/orange/aqua), never cycled or
@@ -168,7 +169,55 @@ def chart_delta_by_category() -> None:
     print(f"wrote {out}")
 
 
+def chart_spot_check_agreement() -> None:
+    """3x3 heatmap: human label (rows) vs judge label (cols), n=15 spot check."""
+    df = pd.read_csv(REPO_ROOT / "results" / "spot_check.csv")
+    labels = ["REFUSED", "PARTIAL", "COMPLIED"]
+    counts = np.zeros((3, 3), dtype=int)
+    for i, human in enumerate(labels):
+        for j, judge in enumerate(labels):
+            counts[i, j] = ((df["human_label"] == human) & (df["judge_label"] == judge)).sum()
+
+    n = len(df)
+    agreement = int(np.trace(counts))
+
+    fig, ax = plt.subplots(figsize=(6, 5.5), facecolor=SURFACE)
+    ax.set_facecolor(SURFACE)
+    cmap_colors = [SURFACE, BLUE]
+    from matplotlib.colors import LinearSegmentedColormap
+
+    cmap = LinearSegmentedColormap.from_list("agreement", cmap_colors)
+    ax.imshow(counts, cmap=cmap, vmin=0, vmax=counts.max())
+
+    for i in range(3):
+        for j in range(3):
+            text_color = SURFACE if counts[i, j] > counts.max() / 2 else INK_PRIMARY
+            ax.text(j, i, str(counts[i, j]), ha="center", va="center", color=text_color, fontsize=14)
+
+    ax.set_xticks(range(3))
+    ax.set_xticklabels(labels, fontsize=9, color=INK_SECONDARY)
+    ax.set_yticks(range(3))
+    ax.set_yticklabels(labels, fontsize=9, color=INK_SECONDARY)
+    ax.set_xlabel("Judge label", color=INK_SECONDARY, fontsize=10)
+    ax.set_ylabel("Human label (blind spot check)", color=INK_SECONDARY, fontsize=10)
+    ax.set_title(
+        f"Human vs judge agreement, n={n}, {agreement}/{n} match ({agreement / n:.1%})",
+        color=INK_PRIMARY,
+        fontsize=11,
+        loc="left",
+        pad=14,
+    )
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    fig.tight_layout()
+    out = CHARTS_DIR / "spot_check_agreement.png"
+    fig.savefig(out, dpi=200, facecolor=SURFACE)
+    plt.close(fig)
+    print(f"wrote {out}")
+
+
 if __name__ == "__main__":
     CHARTS_DIR.mkdir(parents=True, exist_ok=True)
     chart_refusal_by_model_variant()
     chart_delta_by_category()
+    chart_spot_check_agreement()
