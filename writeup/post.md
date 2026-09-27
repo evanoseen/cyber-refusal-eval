@@ -32,8 +32,8 @@ Qwen 2.5 72B moves second most, and in the wrong direction for the headline hypo
 
 | model | refused, single turn | refused, multi turn | complied, single turn | complied, multi turn | complied delta (pts) |
 |---|---|---|---|---|---|
-| gpt-oss-120b | 100% | 0% | 0% | 80% | +80 |
-| qwen-2.5-72b | 0% | 13% | 73% | 27% | -47 |
+| gpt-oss-120b | 100% | 7% | 0% | 80% | +80 |
+| qwen-2.5-72b | 7% | 13% | 73% | 27% | -47 |
 | llama-3.3-70b | 13% | 13% | 27% | 0% | -27 |
 
 Every one of these deltas comes with a wide bootstrap confidence interval, n=15 per model, and the per category breakdown below is n=3 per cell, wider still. The full interval table is in `results/bootstrap_by_model.csv` and `results/bootstrap.csv`. I am reporting the point estimates because the direction is what is doing the work here, not a precise magnitude.
@@ -48,7 +48,7 @@ So the real headline is narrower than "decomposition breaks refusal training": i
 
 My best guess for why Qwen moves the way it does, and it is a guess, is that the early, innocuous sounding turns in the decomposed version end up anchoring a more cautious final answer than an isolated direct ask does, or that four turns of escalating specificity reads as more legibly adversarial to the model than one blunt message that could plausibly be a curious question. I have not tested either explanation directly. Someone should.
 
-One real difference between gpt-oss-120b and the other two: it is billed as a reasoning model, and its multi turn completions cost roughly 245 thousand output tokens across fifteen samples, about seven times Llama's multi turn total and three and a half times Qwen's, on the same fifteen chains. I checked whether the judge was simply seeing a long visible reasoning trace and finding more to call operational in it. It is not: a raw gpt-oss-120b completion I read directly is a clean structured walkthrough a few thousand tokens long, no chain of thought markup in it, nowhere near the billed token count. The reasoning happens in a hidden channel the provider bills but does not return, and the judge only ever sees the same kind of final answer text it sees from the other two models, so this is not simply a judge sees more words effect. What I cannot rule out: a model built to reason at length before answering may also compose a more thorough final answer once decomposition has already moved it past a refusal, a more interesting mechanism than a scoring artifact, and one a fourth model chosen to separate reasoning style from single turn conservatism could test directly.
+One real difference between gpt-oss-120b and the other two: it is billed as a reasoning model, and its multi turn completions cost roughly 245 thousand output tokens across fifteen samples, about seven times Llama's multi turn total and nearly four times Qwen's, on the same fifteen chains. I checked whether the judge was simply seeing a long visible reasoning trace and finding more to call operational in it. It is not: a raw gpt-oss-120b completion I read directly is a clean structured walkthrough a few thousand tokens long, no chain of thought markup in it, nowhere near the billed token count. The reasoning happens in a hidden channel the provider bills but does not return, and the judge only ever sees the same kind of final answer text it sees from the other two models, so this is not simply a judge sees more words effect. What I cannot rule out: a model built to reason at length before answering may also compose a more thorough final answer once decomposition has already moved it past a refusal, a more interesting mechanism than a scoring artifact, and one a fourth model chosen to separate reasoning style from single turn conservatism could test directly.
 
 ## Why I trust these numbers
 
