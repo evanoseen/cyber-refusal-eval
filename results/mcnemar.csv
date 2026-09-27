@@ -1,4 +1,7 @@
-model,n_chains,b_single_complied_multi_not,c_single_not_multi_complied,p_value_exact,direction
-gpt-oss-120b,15,0,12,0.000488,multi > single
-llama-3.3-70b,15,4,0,0.125,single > multi
-qwen-2.5-72b,15,7,0,0.015625,single > multi
+model,subset,n_chains,b_single_complied_multi_not,c_single_not_multi_complied,p_value_exact,direction
+gpt-oss-120b,all_15_chains,15,0,12,0.000488,multi > single
+llama-3.3-70b,all_15_chains,15,4,0,0.125,single > multi
+qwen-2.5-72b,all_15_chains,15,7,0,0.015625,single > multi
+gpt-oss-120b,framing_constant_10_chains,10,0,9,0.003906,multi > single
+llama-3.3-70b,framing_constant_10_chains,10,3,0,0.25,single > multi
+qwen-2.5-72b,framing_constant_10_chains,10,5,0,0.0625,single > multi

@@ -1,0 +1,2 @@
+model,judge_visible_text_chars,reasoning_chars_never_shown_to_judge,reasoning_share_of_total_chars,est_judge_visible_text_tokens,est_reasoning_tokens,billed_output_tokens_all_15_samples
+openai-api/deepinfra/openai/gpt-oss-120b,857299,88437,0.0935,214324.8,22109.2,245569

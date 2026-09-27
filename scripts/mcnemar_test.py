@@ -8,6 +8,13 @@ what McNemar's test is for. Reports the exact binomial McNemar p value per
 model (appropriate at this sample size, not the chi square approximation),
 plus which direction the discordant pairs run.
 
+Also reports the same test restricted to the 10 chains (2 of the 3
+escalation patterns) whose single turn ask carries the same framing as its
+multi turn version: authority roleplay and defensive framing pivot. Only
+conceptual bracketing's single turn ask is bare, so it is excluded from this
+subset, which isolates a turn count effect from a framing effect (see
+data/sanitization_log.md's pattern design note and writeup/post.md).
+
 Usage:
     python3 scripts/mcnemar_test.py
 """
@@ -29,6 +36,16 @@ MODEL_SHORT_NAMES = {
 }
 
 MODEL_ORDER = ["gpt-oss-120b", "llama-3.3-70b", "qwen-2.5-72b"]
+
+# Transcribed from data/sanitization_log.md's per chain table (same mapping
+# as scripts/pattern_breakdown.py). B and C hold framing constant across
+# variants; A does not, so A is excluded from the "framing constant" subset.
+PATTERN = {
+    "chain-001": "A", "chain-004": "A", "chain-007": "A", "chain-010": "A", "chain-013": "A",
+    "chain-002": "B", "chain-005": "B", "chain-008": "B", "chain-011": "B", "chain-014": "B",
+    "chain-003": "C", "chain-006": "C", "chain-009": "C", "chain-012": "C", "chain-015": "C",
+}
+FRAMING_CONSTANT_CHAINS = {c for c, p in PATTERN.items() if p in ("B", "C")}
 
 
 def mcnemar_exact(b: int, c: int) -> float:
@@ -61,50 +78,64 @@ def load_paired_complied() -> dict[str, dict[str, dict[str, str]]]:
     return data
 
 
+def run_mcnemar(data: dict, model: str, chain_filter: set[str] | None) -> dict:
+    b = c = n = 0
+    for chain_id, variants in data[model].items():
+        if chain_filter is not None and chain_id not in chain_filter:
+            continue
+        if "single" not in variants or "multi" not in variants:
+            continue
+        n += 1
+        s_complied = variants["single"] == "COMPLIED"
+        m_complied = variants["multi"] == "COMPLIED"
+        if s_complied and not m_complied:
+            b += 1
+        elif not s_complied and m_complied:
+            c += 1
+
+    p = mcnemar_exact(b, c)
+    direction = (
+        "no discordant pairs"
+        if b == c == 0
+        else "multi > single" if c > b else "single > multi"
+    )
+    return {
+        "n_chains": n,
+        "b_single_complied_multi_not": b,
+        "c_single_not_multi_complied": c,
+        "p_value_exact": round(p, 6),
+        "direction": direction,
+    }
+
+
 if __name__ == "__main__":
     data = load_paired_complied()
     rows = []
     for model in MODEL_ORDER:
-        b = c = concordant_complied = concordant_not = n = 0
-        for chain_id, variants in data[model].items():
-            if "single" not in variants or "multi" not in variants:
-                continue
-            n += 1
-            s_complied = variants["single"] == "COMPLIED"
-            m_complied = variants["multi"] == "COMPLIED"
-            if s_complied and not m_complied:
-                b += 1
-            elif not s_complied and m_complied:
-                c += 1
-            elif s_complied and m_complied:
-                concordant_complied += 1
-            else:
-                concordant_not += 1
-
-        p = mcnemar_exact(b, c)
-        direction = (
-            "no discordant pairs"
-            if b == c == 0
-            else "multi > single" if c > b else "single > multi"
-        )
-        rows.append(
-            {
-                "model": model,
-                "n_chains": n,
-                "b_single_complied_multi_not": b,
-                "c_single_not_multi_complied": c,
-                "p_value_exact": round(p, 6),
-                "direction": direction,
-            }
-        )
+        result = run_mcnemar(data, model, chain_filter=None)
+        row = {"model": model, "subset": "all_15_chains", **result}
+        rows.append(row)
         print(
-            f"{model}: n={n}, b={b}, c={c}, exact McNemar p={p:.6f} ({direction})"
+            f"{model} (all 15): n={row['n_chains']}, b={row['b_single_complied_multi_not']}, "
+            f"c={row['c_single_not_multi_complied']}, exact McNemar p={row['p_value_exact']:.6f} "
+            f"({row['direction']})"
+        )
+
+    for model in MODEL_ORDER:
+        result = run_mcnemar(data, model, chain_filter=FRAMING_CONSTANT_CHAINS)
+        row = {"model": model, "subset": "framing_constant_10_chains", **result}
+        rows.append(row)
+        print(
+            f"{model} (framing constant, 10): n={row['n_chains']}, "
+            f"b={row['b_single_complied_multi_not']}, c={row['c_single_not_multi_complied']}, "
+            f"exact McNemar p={row['p_value_exact']:.6f} ({row['direction']})"
         )
 
     import csv
 
+    fieldnames = ["model", "subset"] + [k for k in rows[0].keys() if k not in ("model", "subset")]
     with OUT_PATH.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
     print(f"wrote {OUT_PATH}")
