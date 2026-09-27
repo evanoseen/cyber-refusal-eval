@@ -1,0 +1,4 @@
+model,b_single_complied_multi_not,c_single_not_multi_complied,p_value_exact
+gpt-oss-120b,0,14,0.000122
+llama-3.3-70b,3,0,0.25
+qwen-2.5-72b,4,0,0.125
