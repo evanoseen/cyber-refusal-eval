@@ -1,4 +1,4 @@
-model,n_single,n_multi,refused_rate_single,refused_rate_multi,refused_rate_delta,refused_rate_delta_ci_low,refused_rate_delta_ci_high,complied_rate_single,complied_rate_multi,complied_rate_delta,complied_rate_delta_ci_low,complied_rate_delta_ci_high
-gpt-oss-120b,15,15,1.0,0.067,-0.933,-1.0,-0.8,0.0,0.8,0.8,0.6,1.0
-llama-3.3-70b,15,15,0.133,0.133,0.0,-0.267,0.267,0.267,0.0,-0.267,-0.467,-0.067
-qwen-2.5-72b,15,15,0.067,0.133,0.067,-0.133,0.267,0.733,0.267,-0.467,-0.8,-0.133
+model,n_chains,refused_rate_single,refused_rate_single_wilson_low,refused_rate_single_wilson_high,refused_rate_multi,refused_rate_multi_wilson_low,refused_rate_multi_wilson_high,refused_rate_delta,refused_rate_delta_ci_low,refused_rate_delta_ci_high,complied_rate_single,complied_rate_single_wilson_low,complied_rate_single_wilson_high,complied_rate_multi,complied_rate_multi_wilson_low,complied_rate_multi_wilson_high,complied_rate_delta,complied_rate_delta_ci_low,complied_rate_delta_ci_high
+gpt-oss-120b,15,1.0,0.796,1.0,0.067,0.012,0.298,-0.933,-1.0,-0.8,0.0,0.0,0.204,0.8,0.548,0.93,0.8,0.6,1.0
+llama-3.3-70b,15,0.133,0.037,0.379,0.133,0.037,0.379,0.0,-0.267,0.267,0.267,0.109,0.52,0.0,0.0,0.204,-0.267,-0.467,-0.067
+qwen-2.5-72b,15,0.067,0.012,0.298,0.133,0.037,0.379,0.067,-0.133,0.267,0.733,0.48,0.891,0.267,0.109,0.52,-0.467,-0.733,-0.2
